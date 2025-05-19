@@ -4,13 +4,22 @@
 #include "SponsorPage.g.cpp"
 #endif
 
-#include "NanaZip.UI.h"
+#include "NanaZip.ModernExperience.h"
+
+#include <Mile.Helpers.CppBase.h>
+#include <Mile.Helpers.CppWinRT.h>
+
+namespace winrt::Mile
+{
+    using namespace ::Mile;
+}
 
 #include <ShObjIdl_core.h>
 
 #include <winrt/Windows.Services.Store.h>
 
-#include "../SevenZip/CPP/7zip/UI/FileManager/resourceGui.h"
+// Defined in SevenZip/CPP/7zip/UI/FileManager/resourceGui.h
+#define IDI_ICON 1
 
 namespace winrt
 {
@@ -22,16 +31,15 @@ namespace winrt
 using namespace winrt;
 using namespace Windows::UI::Xaml;
 
-namespace winrt::NanaZip::Modern::implementation
+namespace winrt::NanaZip::ModernExperience::implementation
 {
     SponsorPage::SponsorPage(
-        _In_ HWND WindowHandle) :
+        _In_opt_ HWND WindowHandle) :
         m_WindowHandle(WindowHandle)
     {
-        ::SetWindowTextW(
-            this->m_WindowHandle,
-            Mile::WinRT::GetLocalizedString(
-                L"SponsorPage/GridTitleTextBlock/Text").c_str());
+        winrt::hstring WindowTitle = Mile::WinRT::GetLocalizedString(
+            L"NanaZip.ModernExperience/SponsorPage/GridTitleTextBlock/Text");
+        ::SetWindowTextW(this->m_WindowHandle, WindowTitle.c_str());
 
         HICON ApplicationIconHandle = reinterpret_cast<HICON>(::LoadImageW(
             ::GetModuleHandleW(nullptr),

@@ -10,14 +10,14 @@ namespace winrt
     using Windows::UI::Xaml::RoutedEventArgs;
 }
 
-namespace winrt::NanaZip::Modern::implementation
+namespace winrt::NanaZip::ModernExperience::implementation
 {
     struct SponsorPage : SponsorPageT<SponsorPage>
     {
     public:
 
         SponsorPage(
-            _In_ HWND WindowHandle = nullptr);
+            _In_opt_ HWND WindowHandle = nullptr);
 
         void InitializeComponent();
 
@@ -39,7 +39,7 @@ namespace winrt::NanaZip::Modern::implementation
     };
 }
 
-namespace winrt::NanaZip::Modern::factory_implementation
+namespace winrt::NanaZip::ModernExperience::factory_implementation
 {
     struct SponsorPage :
         SponsorPageT<SponsorPage, implementation::SponsorPage>

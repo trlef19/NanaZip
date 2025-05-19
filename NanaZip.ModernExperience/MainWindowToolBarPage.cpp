@@ -7,11 +7,15 @@
 #include <winrt/Windows.UI.Xaml.Automation.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
 
-#include "../SevenZip/CPP/Common/Common.h"
-#include "../SevenZip/CPP/7zip/UI/FileManager/resource.h"
-#include "../SevenZip/CPP/7zip/UI/FileManager/LangUtils.h"
+#include "NanaZip.ModernExperience.h"
 
-#include "NanaZip.UI.h"
+#include <Mile.Helpers.CppBase.h>
+#include <Mile.Helpers.CppWinRT.h>
+
+namespace winrt::Mile
+{
+    using namespace ::Mile;
+}
 
 #include <ShObjIdl_core.h>
 
@@ -68,6 +72,13 @@ namespace
             Add = 1070,
             Extract = 1071,
             Test = 1072,
+            Copy = 546,
+            Move = 547,
+            Delete = 548,
+            Info = 551,
+            Options = 900,
+            Benchmark = 901,
+            About = 961
         };
     }
 
@@ -83,11 +94,13 @@ namespace
     }
 }
 
-namespace winrt::NanaZip::Modern::implementation
+namespace winrt::NanaZip::ModernExperience::implementation
 {
     MainWindowToolBarPage::MainWindowToolBarPage(
-        _In_ HWND WindowHandle) :
-        m_WindowHandle(WindowHandle)
+        _In_ HWND WindowHandle,
+        _In_ HMENU MoreMenu) :
+        m_WindowHandle(WindowHandle),
+        m_MoreMenu(MoreMenu)
     {
 
     }
@@ -95,20 +108,6 @@ namespace winrt::NanaZip::Modern::implementation
     void MainWindowToolBarPage::InitializeComponent()
     {
         MainWindowToolBarPageT::InitializeComponent();
-
-        DWORD ToolBarResources[10] =
-        {
-            IDS_ADD,
-            IDS_EXTRACT,
-            IDS_TEST,
-            IDS_BUTTON_COPY,
-            IDS_BUTTON_MOVE,
-            IDS_BUTTON_DELETE,
-            IDS_BUTTON_INFO,
-            IDM_OPTIONS,
-            IDM_BENCHMARK,
-            IDM_ABOUT
-        };
 
         winrt::AppBarButton ToolBarButtons[10] =
         {
@@ -124,13 +123,27 @@ namespace winrt::NanaZip::Modern::implementation
             this->AboutButton()
         };
 
+        const wchar_t* ToolBarResources[10] =
+        {
+            L"Legacy/Resource7200",
+            L"Legacy/Resource7201",
+            L"Legacy/Resource7202",
+            L"Legacy/Resource7203",
+            L"Legacy/Resource7204",
+            L"Legacy/Resource7205",
+            L"Legacy/Resource7206",
+            L"Legacy/Resource900",
+            L"Legacy/Resource901",
+            L"Legacy/Resource961"
+        };
+
         const std::size_t ToolBarButtonCount =
             sizeof(ToolBarButtons) / sizeof(*ToolBarButtons);
 
         for (size_t i = 0; i < ToolBarButtonCount; ++i)
         {
-            std::wstring Resource = std::wstring(
-                ::LangString(ToolBarResources[i]));
+            winrt::hstring Resource =
+                Mile::WinRT::GetLocalizedString(ToolBarResources[i]);
             winrt::AutomationProperties::SetName(
                 ToolBarButtons[i],
                 Resource);
@@ -220,7 +233,7 @@ namespace winrt::NanaZip::Modern::implementation
             this->m_WindowHandle,
             WM_COMMAND,
             MAKEWPARAM(
-                IDM_COPY_TO,
+                ToolBarCommandID::Copy,
                 BN_CLICKED),
             0);
     }
@@ -236,7 +249,7 @@ namespace winrt::NanaZip::Modern::implementation
             this->m_WindowHandle,
             WM_COMMAND,
             MAKEWPARAM(
-                IDM_MOVE_TO,
+                ToolBarCommandID::Move,
                 BN_CLICKED),
             0);
     }
@@ -252,7 +265,7 @@ namespace winrt::NanaZip::Modern::implementation
             this->m_WindowHandle,
             WM_COMMAND,
             MAKEWPARAM(
-                IDM_DELETE,
+                ToolBarCommandID::Delete,
                 BN_CLICKED),
             0);
     }
@@ -268,7 +281,7 @@ namespace winrt::NanaZip::Modern::implementation
             this->m_WindowHandle,
             WM_COMMAND,
             MAKEWPARAM(
-                IDM_PROPERTIES,
+                ToolBarCommandID::Info,
                 BN_CLICKED),
             0);
     }
@@ -284,7 +297,7 @@ namespace winrt::NanaZip::Modern::implementation
             this->m_WindowHandle,
             WM_COMMAND,
             MAKEWPARAM(
-                IDM_OPTIONS,
+                ToolBarCommandID::Options,
                 BN_CLICKED),
             0);
     }
@@ -300,7 +313,7 @@ namespace winrt::NanaZip::Modern::implementation
             this->m_WindowHandle,
             WM_COMMAND,
             MAKEWPARAM(
-                IDM_BENCHMARK,
+                ToolBarCommandID::Benchmark,
                 BN_CLICKED),
             0);
     }
@@ -312,7 +325,13 @@ namespace winrt::NanaZip::Modern::implementation
         UNREFERENCED_PARAMETER(sender);
         UNREFERENCED_PARAMETER(e);
 
-        NanaZip::UI::ShowAboutDialog(this->m_WindowHandle);
+        ::PostMessageW(
+            this->m_WindowHandle,
+            WM_COMMAND,
+            MAKEWPARAM(
+                ToolBarCommandID::About,
+                BN_CLICKED),
+            0);
     }
 
     void MainWindowToolBarPage::MoreButtonClick(
@@ -328,8 +347,6 @@ namespace winrt::NanaZip::Modern::implementation
             Button.TransformToVisual(this->Content());
         winrt::Point LogicalPoint = Transform.TransformPoint(
             winrt::Point(0.0f, 0.0f));
-
-        extern HMENU g_MoreMenu;
 
         UINT DpiValue = ::GetDpiForWindow(this->m_WindowHandle);
 
@@ -352,33 +369,33 @@ namespace winrt::NanaZip::Modern::implementation
             this->m_WindowHandle,
             WM_INITMENUPOPUP,
             reinterpret_cast<WPARAM>(::GetSubMenu(
-                g_MoreMenu,
+                this->m_MoreMenu,
                 MenuIndex::File)),
             MenuIndex::File);
         ::SendMessageW(
             this->m_WindowHandle,
             WM_INITMENUPOPUP,
             reinterpret_cast<WPARAM>(::GetSubMenu(
-                g_MoreMenu,
+                this->m_MoreMenu,
                 MenuIndex::Edit)),
             MenuIndex::Edit);
         ::SendMessageW(
             this->m_WindowHandle,
             WM_INITMENUPOPUP,
             reinterpret_cast<WPARAM>(::GetSubMenu(
-                g_MoreMenu,
+                this->m_MoreMenu,
                 MenuIndex::View)),
             MenuIndex::View);
         ::SendMessageW(
             this->m_WindowHandle,
             WM_INITMENUPOPUP,
             reinterpret_cast<WPARAM>(::GetSubMenu(
-                g_MoreMenu,
+                this->m_MoreMenu,
                 MenuIndex::Bookmarks)),
             MenuIndex::Bookmarks);
 
         WPARAM Command = ::TrackPopupMenuEx(
-            g_MoreMenu,
+            this->m_MoreMenu,
             TPM_LEFTALIGN | TPM_NONOTIFY | TPM_RETURNCMD,
             MenuPosition.x,
             MenuPosition.y,
@@ -558,12 +575,29 @@ namespace winrt::NanaZip::Modern::implementation
                 winrt::DispatcherQueuePriority::Normal,
                 [=]()
             {
+                std::wstring ResourcePath = L"NanaZip.ModernExperience/";
+                ResourcePath += L"MainWindowToolBarPage/SponsorButton/";
+                ResourcePath += Sponsored ? L"SponsoredText" : L"AcquireText";
+                winrt::hstring ResourceContent =
+                    Mile::WinRT::GetLocalizedString(ResourcePath.c_str());
                 this->SponsorButton().Content(
-                    winrt::box_value(Mile::WinRT::GetLocalizedString(
-                        Sponsored
-                        ? L"MainWindowToolBarPage/SponsorButton/SponsoredText"
-                        : L"MainWindowToolBarPage/SponsorButton/AcquireText")));
+                    winrt::box_value(ResourceContent));
             });
         }));
     }
+}
+
+EXTERN_C LPVOID WINAPI K7ModernCreateMainWindowToolBarPage(
+    _In_ HWND ParentWindowHandle,
+    _In_ HMENU MoreMenuHandle)
+{
+    using Interface =
+        winrt::NanaZip::ModernExperience::MainWindowToolBarPage;
+    using Implementation =
+        winrt::NanaZip::ModernExperience::implementation::MainWindowToolBarPage;
+
+    Interface Window = winrt::make<Implementation>(
+        ParentWindowHandle,
+        MoreMenuHandle);
+    return winrt::detach_abi(Window);
 }

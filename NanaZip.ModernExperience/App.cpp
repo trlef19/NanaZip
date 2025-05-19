@@ -1,10 +1,13 @@
 ﻿#include "pch.h"
 
 #include "App.h"
+#if __has_include("App.g.cpp")
+#include "App.g.cpp"
+#endif
 
 #include <Mile.Xaml.h>
 
-namespace winrt::NanaZip::Modern::implementation
+namespace winrt::NanaZip::ModernExperience::implementation
 {
     App::App()
     {

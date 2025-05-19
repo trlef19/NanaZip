@@ -1,7 +1,5 @@
 ﻿// App.cpp
 
-#include "../../../../../pch.h"
-
 #include "StdAfx.h"
 
 #include "resource.h"
@@ -31,8 +29,7 @@
 
 #include "PropertyNameRes.h"
 
-#include <Mile.Xaml.h>
-#include "../../../../../MainWindowToolBarPage.h"
+#include <NanaZip.ModernExperience.h>
 
 using namespace NWindows;
 using namespace NFile;
@@ -163,10 +160,7 @@ HRESULT CApp::Create(HWND hwnd, const UString &mainPath, const UString &arcForma
   _commandBar.AutoSize();
   #endif
 
-  using MainWindowToolBarPageImplementation =
-      winrt::NanaZip::Modern::implementation::MainWindowToolBarPage;
-  winrt::NanaZip::Modern::MainWindowToolBarPage ToolBarPage =
-      winrt::make<MainWindowToolBarPageImplementation>(hwnd);
+  extern HMENU g_MoreMenu;
 
   UINT DpiValue = ::GetDpiForWindow(hwnd);
   int ToolBarControlHeight = ::MulDiv(48, DpiValue, USER_DEFAULT_SCREEN_DPI);
@@ -186,7 +180,7 @@ HRESULT CApp::Create(HWND hwnd, const UString &mainPath, const UString &arcForma
       hwnd,
       nullptr,
       nullptr,
-      winrt::get_abi(ToolBarPage));
+      ::K7ModernCreateMainWindowToolBarPage(hwnd, g_MoreMenu));
 
   ::SetWindowSubclass(
       this->m_ToolBar,

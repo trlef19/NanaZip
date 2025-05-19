@@ -1,0 +1,7 @@
+﻿LIBRARY
+
+EXPORTS
+
+K7ModernShowSponsorDialog
+K7ModernShowAboutDialog
+K7ModernCreateMainWindowToolBarPage

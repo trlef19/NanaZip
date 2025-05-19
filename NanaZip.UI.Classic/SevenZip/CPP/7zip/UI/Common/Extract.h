@@ -41,7 +41,7 @@ struct CExtractOptionsBase
       OverwriteMode_Force(false),
       PathMode(NExtract::NPathMode::kFullPaths),
       OverwriteMode(NExtract::NOverwriteMode::kAsk),
-      ZoneMode(NExtract::NZoneIdMode::kNone)
+      ZoneMode(NExtract::NZoneIdMode::Default)  // NanaZip Modification
       {}
 };
 
@@ -49,6 +49,9 @@ struct CExtractOptions: public CExtractOptionsBase
 {
   bool StdInMode;
   bool StdOutMode;
+  // **************** NanaZip Modification Start ****************
+  CBoolPair OpenFolder;
+  // **************** NanaZip Modification End ****************
   bool YesToAll;
   bool TestMode;
 
